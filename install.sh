@@ -3,6 +3,9 @@
 #  ヴィレグループ Mac スタートキット
 #  使い方（社員）:  curl -fsSL https://raw.githubusercontent.com/igawowwow/ville-setup-public/main/install.sh | bash
 #  使い方（手元）:  bash install.sh --profile dev
+#
+#  配布は公開の薄いリポ ville-setup-public から行う（DNS/本番サイトに触れない）。
+#  中身の管理・開発はこのリポ（private）で行い、release.sh で public 側へ同期する。
 # ==========================================================
 set -uo pipefail
 
