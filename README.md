@@ -24,6 +24,14 @@ bash <(curl -fsSL https://raw.githubusercontent.com/igawowwow/ville-setup-public
 vg-update
 ```
 
+「このソフトウェアは現在、アップデートサーバから入手できません」と出たら:
+① 日付と時刻の自動設定がON ② Apple IDにサインイン済み ③ スクリーンタイムの
+「コンテンツとプライバシーの制限」がOFF — の3つを確認。それでもダメなら:
+```
+open "https://developer.apple.com/download/all/?q=Command+Line+Tools"
+```
+でApple公式サイトから直接ダウンロードしてインストール。
+
 ## Windows（草案・実機未検証）
 
 PowerShellを管理者権限で開いて：
