@@ -1,0 +1,49 @@
+#!/usr/bin/env zsh
+# ヴィレグループ 共通シェル設定
+# このファイルは ville-setup 管理。個人の設定・秘密は ~/.zshrc 側に書く（ここは上書きされる）
+
+# --- Homebrew（Apple Silicon / Intel 両対応） ---
+if [[ -x /opt/homebrew/bin/brew ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [[ -x /usr/local/bin/brew ]]; then
+  eval "$(/usr/local/bin/brew shellenv)"
+fi
+
+# --- PATH ---
+export PATH="$HOME/.local/bin:$PATH"                       # claude 本体
+[[ -d "$HOME/.ccagi/bin" ]] && export PATH="$HOME/.ccagi/bin:$PATH"
+[[ -d "$(brew --prefix 2>/dev/null)/opt/libpq/bin" ]] && export PATH="$(brew --prefix)/opt/libpq/bin:$PATH"
+[[ -d "$(brew --prefix 2>/dev/null)/opt/node@22/bin" ]] && export PATH="$(brew --prefix)/opt/node@22/bin:$PATH"
+
+# --- 日本語・ロケール ---
+export LANG=ja_JP.UTF-8
+export LC_ALL=ja_JP.UTF-8
+
+# --- 履歴（複数ターミナルでも消えない） ---
+export HISTSIZE=100000
+export SAVEHIST=100000
+setopt SHARE_HISTORY HIST_IGNORE_ALL_DUPS HIST_REDUCE_BLANKS INC_APPEND_HISTORY
+
+# --- 補完 ---
+autoload -Uz compinit && compinit -C
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+
+# --- エイリアス（VG共通） ---
+alias ll='ls -lah'
+alias gs='git status -sb'
+alias gd='git diff'
+alias gl='git log --oneline --graph --decorate -20'
+alias gp='git pull --ff-only'
+alias c='claude'
+alias cc='claude --dangerously-skip-permissions'   # 自分の管理下のリポだけで使う
+alias vg-update='bash <(curl -fsSL https://raw.githubusercontent.com/igawowwow/ville-setup-public/main/install.sh) --update'
+
+# --- ghq 的なリポ置き場 ---
+export VG_REPOS="$HOME/repos"
+vg() { cd "$VG_REPOS/${1:-}" 2>/dev/null || cd "$VG_REPOS"; }
+
+# --- nvm（入っている人だけ遅延ロード） ---
+export NVM_DIR="$HOME/.nvm"
+if [[ -s "$NVM_DIR/nvm.sh" ]]; then
+  nvm() { unset -f nvm; . "$NVM_DIR/nvm.sh"; nvm "$@"; }
+fi

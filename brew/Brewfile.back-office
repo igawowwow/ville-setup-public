@@ -1,0 +1,9 @@
+# プロファイル: back-office（労務 / 経理 / バックオフィス）
+# freee・請求・書類作業まわり
+
+brew "poppler"          # PDFの結合・テキスト抽出
+brew "qpdf"             # PDFの分割・パスワード解除
+
+cask "zoom"
+cask "libreoffice"
+cask "adobe-acrobat-reader"

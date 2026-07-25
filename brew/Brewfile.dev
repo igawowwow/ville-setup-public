@@ -1,0 +1,19 @@
+# プロファイル: dev（エンジニア / Claude Code で開発する人）
+# 殿の現行環境と同じ構成に揃えてある
+
+brew "node@22"
+brew "python@3.12"
+brew "tmux"
+brew "libpq"            # psql（Supabase / Cloud SQL 直叩き用）
+brew "postgresql@16"
+brew "ffmpeg"
+brew "poppler"          # pdftotext / pdftoppm
+brew "tesseract-lang"   # OCR（日本語込み）
+brew "rclone"
+brew "watchman"
+
+cask "visual-studio-code"
+cask "orbstack"         # Docker Desktop の軽量代替
+cask "gcloud-cli"       # Cloud Run / GCP
+cask "ngrok"
+cask "iterm2"

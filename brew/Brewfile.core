@@ -1,0 +1,18 @@
+# ヴィレグループ 全員共通
+# 追加/削除したらこのファイルだけ直せば全社員に反映される（再実行で追いつく）
+
+# --- CLI ---
+brew "git"
+brew "gh"           # GitHub CLI（社内リポは全部GitHub）
+brew "jq"
+brew "ripgrep"
+brew "wget"
+brew "coreutils"
+brew "mas"          # App Store アプリをCLIで入れる
+
+# --- アプリ ---
+cask "google-chrome"
+cask "slack"
+cask "google-drive"
+cask "rectangle"    # ウィンドウ整列（Win感覚のスナップ）
+cask "raycast"      # Spotlight代替。検索/クリップボード履歴

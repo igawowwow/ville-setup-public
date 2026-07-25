@@ -1,0 +1,6 @@
+# プロファイル: sales（営業）
+# bizcore / HubSpot / Slack が主戦場。重いものは入れない
+
+cask "zoom"
+cask "notion"           # 社内ドキュメント閲覧用
+cask "libreoffice"      # 提案書のExcel/Word互換（Officeライセンス不要な人向け）
