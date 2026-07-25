@@ -111,6 +111,27 @@ if xcode-select -p >/dev/null 2>&1; then
 else
   warn "インストーラを起動する。ダイアログで［インストール］を押して、完了したらこのスクリプトを再実行"
   run xcode-select --install
+
+  if command -v curl >/dev/null 2>&1 && ! curl -fsS --max-time 5 -o /dev/null https://swcdn.apple.com; then
+    warn "Appleの配信サーバに繋がっていない（Wi-FiかDNSを確認）"
+  fi
+
+  cat >&2 <<'EOS'
+
+  ダイアログで「このソフトウェアは現在、アップデートサーバから
+  入手できないため、インストールできません」と出た場合は、上から順に確認:
+
+    1) システム設定 → 一般 → 日付と時刻 →「自動的に設定」がON
+    2) システム設定の一番上でApple IDにサインイン済みか
+    3) システム設定 → スクリーンタイム →「コンテンツとプライバシーの制限」がOFF
+       （ONだとAppのインストール自体がブロックされる）
+
+  それでも直らない場合は、Apple公式サイトから直接ダウンロードする
+  （下のコマンドでブラウザが開く。Apple IDでサインインしてダウンロード→開いてインストール）:
+
+    open "https://developer.apple.com/download/all/?q=Command+Line+Tools"
+
+EOS
   [[ "$DRY_RUN" == "1" ]] || exit 0
 fi
 
