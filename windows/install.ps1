@@ -97,4 +97,4 @@ Write-Host "==============================================" -ForegroundColor Gre
 Write-Host "  次にやること:"
 Write-Host "    - gh auth login  でGitHubにログイン"
 Write-Host "    - Slack / Google Drive を起動して会社アカウントでログイン"
-Write-Host "    - 1Password の招待メールから会社アカウントに参加"
+Write-Host "    - Chromeで会社のGoogleアカウントにログイン（パスワードは自動同期）"

@@ -12,7 +12,7 @@ curl -fsSL https://raw.githubusercontent.com/igawowwow/ville-setup-public/main/i
 
 終わったらターミナルを閉じて開き直し、案内された `gh auth login` 等でログイン。
 Slack・Google Drive はアプリを起動して会社アカウントでログイン。
-社内のパスワードは 1Password（招待メールから参加）。
+社内のパスワードはGoogleパスワードマネージャー（会社のGoogleアカウントでChromeにログインすれば自動同期）。
 
 確認だけしたい（何も変更しない）:
 ```

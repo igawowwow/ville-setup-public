@@ -277,7 +277,7 @@ if [[ -n "$NEED_AUTH" ]]; then
 fi
 cat <<'EOS'
   ▸ Slack と Google Drive はアプリを起動して会社アカウントでログイン
-  ▸ 1Password の招待メールから会社アカウントに参加（パスワードは全部ここ）
+  ▸ Chromeで会社のGoogleアカウントにログイン（パスワードはGoogleパスワードマネージャーで自動同期）
 
   環境が壊れた / 設定を最新にしたい:   vg-update
   何が入っているか確認:                bash <(curl -fsSL https://ville-ville.com/setup) --verify
