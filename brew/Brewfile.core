@@ -16,3 +16,8 @@ cask "slack"
 cask "google-drive"
 cask "rectangle"    # ウィンドウ整列（Win感覚のスナップ）
 cask "raycast"      # Spotlight代替。検索/クリップボード履歴
+cask "chatwork"
+mas "Magnet", id: 441258766   # 有料ウィンドウ整列。Rectangleと両方使う派向け。要Apple IDサインイン済み
+
+# --- brewでは入らないので手動導入 ---
+# LINE: Homebrew caskが無い。App Store か https://line.me/ja/download からインストール

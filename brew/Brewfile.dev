@@ -17,3 +17,8 @@ cask "orbstack"         # Docker Desktop の軽量代替
 cask "gcloud-cli"       # Cloud Run / GCP
 cask "ngrok"
 cask "iterm2"
+cask "chatgpt"          # OpenAI公式デスクトップアプリ
+cask "adobe-acrobat-reader"
+
+# --- brewでは入らないので手動導入 ---
+# tl;dv: Homebrew caskが無い。Chromeウェブストアの拡張機能として https://tldv.io/ から導入

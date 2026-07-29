@@ -227,15 +227,17 @@ ok "$HOME/repos を作成（vg コマンドで移動できる）"
 
 # ---------- macOS の使いやすさ設定 ----------
 step "macOS の初期設定を業務向けに調整"
-run defaults write NSGlobalDomain KeyRepeat -int 2
-run defaults write NSGlobalDomain InitialKeyRepeat -int 15
+run defaults write NSGlobalDomain KeyRepeat -int 1          # キーリピート最速（GUIスライダーの上限=2よりさらに速い）
+run defaults write NSGlobalDomain InitialKeyRepeat -int 10  # リピート開始までの待ち時間も最短
 run defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false
+run defaults write NSGlobalDomain com.apple.mouse.scaling -float 3.0      # マウス速度最速（GUIスライダー上限）
+run defaults write NSGlobalDomain com.apple.trackpad.scaling -float 3.0   # トラックパッド速度最速
 run defaults write com.apple.finder AppleShowAllExtensions -bool true   # 拡張子を常に表示
 run defaults write com.apple.finder ShowPathbar -bool true
 run defaults write com.apple.screencapture location -string "$HOME/Downloads"
 run mkdir -p "$HOME/Downloads"
 run killall Finder 2>/dev/null || true
-ok "キーリピート高速化・拡張子表示・スクショは Downloads へ"
+ok "キーリピート・マウス/トラックパッド速度を最速化、拡張子表示、スクショは Downloads へ"
 
 # ---------- 認証（本人の操作が必要。ターミナルを開き直した瞬間に自動で誘導する） ----------
 step "ログイン（次にターミナルを開いたときに自動で1つずつ案内される）"
