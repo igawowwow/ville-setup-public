@@ -148,8 +148,16 @@ if command -v brew >/dev/null 2>&1; then
   ok "$(brew --version | head -1)"
 else
   warn "Homebrew を導入する（Macのパスワードを聞かれる）"
-  run /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" \
-    || die "Homebrew の導入に失敗"
+  # curl|bash 経由だとこのスクリプト自体が標準入力(パイプ)を使い切っていて、
+  # Homebrewインストーラーがsudoパスワードを聞こうとしても「TTYじゃない」と
+  # 判定されて失敗する。/dev/tty に繋ぎ直して本物のターミナル入力に戻す。
+  if [[ -e /dev/tty ]]; then
+    run /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" </dev/tty \
+      || die "Homebrew の導入に失敗"
+  else
+    run /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" \
+      || die "Homebrew の導入に失敗"
+  fi
 fi
 if [[ -x /opt/homebrew/bin/brew ]]; then eval "$(/opt/homebrew/bin/brew shellenv)"
 elif [[ -x /usr/local/bin/brew ]]; then eval "$(/usr/local/bin/brew shellenv)"; fi
