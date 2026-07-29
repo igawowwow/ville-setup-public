@@ -229,25 +229,32 @@ run mkdir -p "$HOME/Downloads"
 run killall Finder 2>/dev/null || true
 ok "キーリピート高速化・拡張子表示・スクショは Downloads へ"
 
-# ---------- 認証（人間がやる必要があるもの） ----------
-step "ログイン（ここだけは本人の操作が必要）"
+# ---------- 認証（本人の操作が必要。ターミナルを開き直した瞬間に自動で誘導する） ----------
+step "ログイン（次にターミナルを開いたときに自動で1つずつ案内される）"
 # macOS 標準の bash 3.2 では空配列 + set -u が事故るので改行区切りの文字列で持つ
 NEED_AUTH=""
-add_auth() { NEED_AUTH="${NEED_AUTH}$1"$'\n'; }
+PENDING_CMDS=""
+add_auth() { NEED_AUTH="${NEED_AUTH}$1"$'\n'; PENDING_CMDS="${PENDING_CMDS}$2"$'\n'; }
 if command -v gh >/dev/null 2>&1; then
   if gh auth status >/dev/null 2>&1; then ok "GitHub: ログイン済み"
-  else add_auth "gh auth login          # GitHub（ブラウザが開く）"; fi
+  else add_auth "gh auth login          # GitHub（ブラウザが開く）" "gh auth login --hostname github.com --git-protocol https --web"; fi
 fi
 if command -v claude >/dev/null 2>&1; then
-  add_auth "claude                  # 初回起動でログイン案内が出る"
+  add_auth "claude                  # 初回起動でログイン案内が出る" "claude"
 fi
 if [[ "$PROFILE" == "dev" ]] && command -v gcloud >/dev/null 2>&1; then
   if gcloud auth list --filter=status:ACTIVE --format='value(account)' 2>/dev/null | grep -q .; then
     ok "Google Cloud: ログイン済み"
   else
-    add_auth "gcloud auth login       # Google Cloud"
-    add_auth "gcloud auth application-default login"
+    add_auth "gcloud auth login       # Google Cloud" "gcloud auth login"
+    add_auth "gcloud auth application-default login" "gcloud auth application-default login"
   fi
+fi
+
+if [[ -n "$PENDING_CMDS" && "$DRY_RUN" != "1" ]]; then
+  run mkdir -p "$VG_HOME"
+  printf '%s' "$PENDING_CMDS" >"$VG_HOME/pending-auth"
+  ok "ターミナルを開き直すと自動で1つずつ実行される（ブラウザでの確認だけ本人が行う）"
 fi
 
 # ---------- 完了 ----------
@@ -257,7 +264,7 @@ printf "%s==============================================%s\n" "$C_G" "$C_RESET"
 echo
 echo "  ▸ ターミナルを一度閉じて開き直す（設定を読み込むため）"
 if [[ -n "$NEED_AUTH" ]]; then
-  echo "  ▸ そのあと下を1行ずつ実行してログイン:"
+  echo "  ▸ 開き直すと、下のログインが自動で1つずつ案内される（ブラウザの確認だけやればいい）:"
   printf '%s' "$NEED_AUTH" | while IFS= read -r a; do echo "      $a"; done
 fi
 cat <<'EOS'

@@ -47,3 +47,20 @@ export NVM_DIR="$HOME/.nvm"
 if [[ -s "$NVM_DIR/nvm.sh" ]]; then
   nvm() { unset -f nvm; . "$NVM_DIR/nvm.sh"; nvm "$@"; }
 fi
+
+# --- 保留中のログインを自動で誘導（install.sh 実行後、初めてターミナルを開いたときだけ） ---
+if [[ -o interactive ]] && [[ -s "$HOME/.ville/pending-auth" ]]; then
+  echo ""
+  echo "▸ 残っているログインを順番に進めます（Ctrl+Cで中断してもOK、次回また続きから聞かれます）"
+  while IFS= read -r __vg_cmd; do
+    [[ -z "$__vg_cmd" ]] && continue
+    echo ""
+    echo "  $ $__vg_cmd"
+    eval "$__vg_cmd"
+    grep -vxF "$__vg_cmd" "$HOME/.ville/pending-auth" >"$HOME/.ville/pending-auth.tmp" 2>/dev/null
+    mv "$HOME/.ville/pending-auth.tmp" "$HOME/.ville/pending-auth"
+  done <"$HOME/.ville/pending-auth"
+  [[ -s "$HOME/.ville/pending-auth" ]] || rm -f "$HOME/.ville/pending-auth"
+  echo ""
+  echo "▸ ログイン完了"
+fi
