@@ -56,9 +56,12 @@ if [[ -o interactive ]] && [[ -s "$HOME/.ville/pending-auth" ]]; then
     [[ -z "$__vg_cmd" ]] && continue
     echo ""
     echo "  $ $__vg_cmd"
-    eval "$__vg_cmd"
-    grep -vxF "$__vg_cmd" "$HOME/.ville/pending-auth" >"$HOME/.ville/pending-auth.tmp" 2>/dev/null
-    mv "$HOME/.ville/pending-auth.tmp" "$HOME/.ville/pending-auth"
+    if eval "$__vg_cmd"; then
+      grep -vxF "$__vg_cmd" "$HOME/.ville/pending-auth" >"$HOME/.ville/pending-auth.tmp" 2>/dev/null
+      mv "$HOME/.ville/pending-auth.tmp" "$HOME/.ville/pending-auth"
+    else
+      echo "  ▸ 完了しなかったので、次回ターミナルを開いたときにまた案内します"
+    fi
   done <"$HOME/.ville/pending-auth"
   [[ -s "$HOME/.ville/pending-auth" ]] || rm -f "$HOME/.ville/pending-auth"
   echo ""
