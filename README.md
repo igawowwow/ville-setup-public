@@ -24,13 +24,11 @@ bash <(curl -fsSL https://raw.githubusercontent.com/igawowwow/ville-setup-public
 vg-update
 ```
 
-「このソフトウェアは現在、アップデートサーバから入手できません」と出たら:
-① 日付と時刻の自動設定がON ② Apple IDにサインイン済み ③ スクリーンタイムの
-「コンテンツとプライバシーの制限」がOFF — の3つを確認。それでもダメなら:
-```
-open "https://developer.apple.com/download/all/?q=Command+Line+Tools"
-```
-でApple公式サイトから直接ダウンロードしてインストール。
+開発ツール（Xcode Command Line Tools）が入っていない場合、スクリプトが自動で
+入れようとする。それでも入らないときは自動でブラウザが開き、Apple公式サイトから
+直接ダウンロードする手順が表示されるので、その通りに進めてからもう一度1行目の
+コマンドを実行すればよい（「このソフトウェアは現在、アップデートサーバから
+入手できません」というダイアログ自体は無視してOK）。
 
 ## Windows（草案・実機未検証）
 
