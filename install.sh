@@ -133,12 +133,27 @@ else
     2) 一覧から「Command Line Tools for Xcode」を探す
        → お使いのmacOSは $(sw_vers -productVersion) なので、それに対応する最新のものを選ぶ
     3) ダウンロードした .dmg を開き、中の .pkg をダブルクリックしてインストーラーの指示に従う
-    4) インストールが終わったらこのターミナルに戻り、もう一度この1行を実行:
-         curl -fsSL https://raw.githubusercontent.com/igawowwow/ville-setup-public/main/install.sh | bash
+    4) インストールが終わったら、このターミナルに戻って Enter を押す（続きは自動で進む）
 
 EOS
     run open "https://developer.apple.com/download/all/?q=Command+Line+Tools"
-    [[ "$DRY_RUN" == "1" ]] || exit 0
+    if [[ "$DRY_RUN" == "1" ]]; then
+      : # dry-run では待たない
+    elif [[ ! -t 0 && ! -e /dev/tty ]]; then
+      # 本当に対話できない環境（/dev/ttyすら無い）。諦めて再実行を促すしかない
+      fail "対話できない環境。手動インストール後にもう一度このコマンドを実行してください"
+      exit 0
+    else
+      # ここで exit すると「ブラウザは開いたが結局その先の導入が
+      # 何ひとつ進んでいない」状態のまま気付かず放置されがちだったため、
+      # 手動インストール完了をここで確認してから自動で続行する。
+      while ! xcode-select -p >/dev/null 2>&1; do
+        ans="$(ask "インストールが終わったら Enter（あきらめるなら q）" "")"
+        [[ "$ans" == "q" ]] && { warn "中断。手動インストールが終わったら、もう一度このコマンドを実行してください"; exit 0; }
+        xcode-select -p >/dev/null 2>&1 || fail "まだ確認できない。.pkg のインストールを終えてからもう一度 Enter"
+      done
+      ok "確認できた。続けます"
+    fi
   fi
 fi
 
