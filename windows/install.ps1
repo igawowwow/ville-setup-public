@@ -60,7 +60,7 @@ Step "役割別アプリを導入 ($Profile)"
 $profileApps = switch ($Profile) {
   "dev" { @("Microsoft.VisualStudioCode", "OpenJS.NodeJS.LTS", "Python.Python.3.12", "Google.CloudSDK") }
   "back-office" { @("Zoom.Zoom", "TheDocumentFoundation.LibreOffice", "Adobe.Acrobat.Reader.64-bit") }
-  default { @("Zoom.Zoom", "Notion.Notion", "TheDocumentFoundation.LibreOffice") }
+  default { @("Zoom.Zoom", "TheDocumentFoundation.LibreOffice") }
 }
 foreach ($id in $profileApps) {
   Write-Host "  導入中: $id"
