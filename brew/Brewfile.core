@@ -17,6 +17,7 @@ cask "google-drive"
 cask "rectangle"    # ウィンドウ整列（Win感覚のスナップ）
 cask "raycast"      # Spotlight代替。検索/クリップボード履歴
 cask "chatwork"
+cask "cloudflare-warp"   # 会社VPN(Zero Trust)。通信暗号化＋危険サイト遮断。install.shがチーム villegroup を自動設定
 mas "Magnet", id: 441258766   # 有料ウィンドウ整列。Rectangleと両方使う派向け。要Apple IDサインイン済み
 
 # --- brewでは入らないので手動導入 ---

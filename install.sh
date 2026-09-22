@@ -189,6 +189,31 @@ else
 fi
 ok "パッケージ処理完了"
 
+# ---------- 会社VPN(Cloudflare WARP)をチームに接続 ----------
+step "会社VPN（WARP）を villegroup に自動接続"
+WARP_MDM="/Library/Application Support/Cloudflare/mdm.xml"
+if [[ "$DRY_RUN" == "1" ]]; then
+  skip "sudo で $WARP_MDM を作成（organization=villegroup / 自動接続）"
+else
+  # mdm.xml を置いておくと、WARPが「チーム villegroup」を最初から指すので
+  # 社員は起動して会社メールにワンタイムコードを入れるだけで繋がる。
+  sudo mkdir -p "/Library/Application Support/Cloudflare" 2>/dev/null \
+    && sudo tee "$WARP_MDM" >/dev/null <<'XML' \
+    && ok "WARP設定を配置（起動→会社メールでログインするだけ）" \
+    || warn "WARP設定の配置に失敗（後で手動: WARPアプリでチーム名 villegroup を入力）"
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>organization</key><string>villegroup</string>
+  <key>auto_connect</key><integer>1</integer>
+  <key>service_mode</key><string>warp</string>
+</dict>
+</plist>
+XML
+  open -a "Cloudflare WARP" 2>/dev/null || true
+fi
+
 # ---------- シェル設定 ----------
 step "シェル設定（~/.zshrc）"
 run mkdir -p "$VG_HOME"
