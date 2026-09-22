@@ -47,13 +47,27 @@ $core = @(
   "SlackTechnologies.Slack",
   "Google.GoogleDrive",
   "Git.Git",
-  "GitHub.cli"
+  "GitHub.cli",
+  "Cloudflare.Warp"
 )
 foreach ($id in $core) {
   Write-Host "  導入中: $id"
   winget install --id $id --silent --accept-package-agreements --accept-source-agreements -e 2>$null
 }
 Ok "共通アプリ完了"
+
+# ---------- 会社VPN(Cloudflare WARP)をチームに接続 ----------
+Step "会社VPN（WARP）を villegroup に自動接続"
+try {
+  $rk = "HKLM:\SOFTWARE\Cloudflare\Warp"
+  New-Item -Path $rk -Force | Out-Null
+  New-ItemProperty -Path $rk -Name "organization" -Value "villegroup" -PropertyType String -Force | Out-Null
+  New-ItemProperty -Path $rk -Name "auto_connect"  -Value 1          -PropertyType DWord  -Force | Out-Null
+  New-ItemProperty -Path $rk -Name "service_mode"  -Value "warp"      -PropertyType String -Force | Out-Null
+  Ok "WARP設定を配置（起動→会社メールでログインするだけ）"
+} catch {
+  Warn "WARP自動設定に失敗（管理者権限が必要）。WARPアプリを開きチーム名 villegroup を手入力してください"
+}
 
 # ---------- プロファイル別アプリ ----------
 Step "役割別アプリを導入 ($Profile)"
@@ -95,6 +109,7 @@ Write-Host "`n==============================================" -ForegroundColor G
 Write-Host "  セットアップ完了（要: 実機での動作確認）" -ForegroundColor Green
 Write-Host "==============================================" -ForegroundColor Green
 Write-Host "  次にやること:"
+Write-Host "    - 会社VPN(WARP): 起動して Login with Cloudflare Zero Trust -> 会社メール(@ville-ville.com) -> 届いたコード入力"
 Write-Host "    - gh auth login  でGitHubにログイン"
 Write-Host "    - Slack / Google Drive を起動して会社アカウントでログイン"
 Write-Host "    - Chromeで会社のGoogleアカウントにログイン（パスワードは自動同期）"
