@@ -2,7 +2,7 @@
 # 導入後のセルフチェック（何も変更しない）
 set -uo pipefail
 SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [[ -f "$SELF_DIR/lib/log.sh" ]]; then source "$SELF_DIR/lib/log.sh"
+if [[ -f "$SELF_DIR/lib/log.sh" ]]; then source "$SELF_DIR/lib/log.sh"; source "$SELF_DIR/lib/security.sh"
 else
   ok(){ echo "  ✓ $*"; }; fail(){ echo "  × $*"; }; warn(){ echo "  ! $*"; }
   step(){ echo; echo "[$*]"; }
@@ -46,6 +46,8 @@ if command -v gcloud >/dev/null 2>&1; then
   gcloud auth list --filter=status:ACTIVE --format='value(account)' 2>/dev/null | grep -q . \
     && ok "Google Cloud ログイン済み" || warn "Google Cloud 未ログイン → gcloud auth login"
 fi
+
+declare -F sec_check >/dev/null && sec_check
 
 step "マシンの健康状態"
 # 実データは /System/Volumes/Data 側にある。/ は読み取り専用なので見ても意味がない

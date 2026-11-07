@@ -82,6 +82,54 @@ foreach ($id in $profileApps) {
 }
 Ok "役割別アプリ完了"
 
+# ---------- セキュリティ一式 ----------
+Step "セキュリティ設定"
+try {
+  Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled True
+  Ok "ファイアウォール: オン"
+} catch { Warn "ファイアウォールの設定に失敗（管理者権限で開き直して再実行）" }
+try {
+  Set-MpPreference -DisableRealtimeMonitoring $false -PUAProtection Enabled
+  Update-MpSignature -ErrorAction SilentlyContinue
+  Ok "Microsoft Defender: リアルタイム保護オン・不要アプリもブロック"
+} catch { Warn "Defenderの設定に失敗（別のウイルス対策ソフトが入っている可能性）" }
+try {
+  $au = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU"
+  New-Item -Path $au -Force | Out-Null
+  Set-ItemProperty -Path $au -Name NoAutoUpdate -Value 0 -Type DWord
+  Set-ItemProperty -Path $au -Name AUOptions -Value 4 -Type DWord
+  Ok "Windows Update: 自動でダウンロード・インストール"
+} catch { Warn "Windows Update の設定に失敗" }
+try {
+  $sys = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+  Set-ItemProperty -Path $sys -Name InactivityTimeoutSecs -Value 300 -Type DWord
+  Set-ItemProperty -Path $sys -Name legalnoticecaption -Value "ヴィレグループ 業務用PC"
+  Set-ItemProperty -Path $sys -Name legalnoticetext -Value "拾われた方は 050-1720-8945 までご連絡ください。"
+  Ok "5分操作がなければ自動ロック・ログイン画面に落とし物の連絡先"
+} catch { Warn "画面ロックの設定に失敗" }
+try { net user guest /active:no | Out-Null; Ok "ゲストアカウント: オフ" } catch { }
+try {
+  $bl = Get-BitLockerVolume -MountPoint $env:SystemDrive -ErrorAction Stop
+  if ($bl.ProtectionStatus -eq 'On') { Ok "ディスク暗号化（BitLocker）: オン" }
+  else { Warn "ディスク暗号化がオフ → 設定 > プライバシーとセキュリティ > デバイスの暗号化 をオン（回復キーはMicrosoftアカウントに保存）"; Start-Process "ms-settings:deviceencryption" }
+} catch { Warn "ディスク暗号化を確認できない（Windows Home は 設定 > デバイスの暗号化 を確認）" }
+
+# ---------- Villesee（勤怠の見える化アプリ） ----------
+Step "Villesee"
+try {
+  $base = 'https://zxstlygsulxsdpehvsua.supabase.co/storage/v1/object/public/agent'
+  $l = Invoke-RestMethod "$base/latest.json?t=$(Get-Random)"
+  $p = $l.platforms.'windows-x86_64'
+  $f = Join-Path $env:TEMP 'villsee-setup.exe'
+  Invoke-WebRequest $p.url -OutFile $f -UseBasicParsing
+  if ((Get-FileHash $f -Algorithm SHA256).Hash.ToLower() -ne $p.sha256) { throw 'ダウンロードが壊れていた' }
+  Get-Process 'villsee-agent' -ErrorAction SilentlyContinue | Stop-Process -Force
+  Start-Process $f -ArgumentList '/S' -Wait
+  $exe = Get-ChildItem "$env:LOCALAPPDATA\Programs","$env:ProgramFiles" -Recurse -Filter 'villsee-agent.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
+  if ($exe) { Start-Process $exe.FullName }
+  Ok "Villesee $($l.version) を導入・起動（以後は自動で最新になる）"
+} catch { Warn "Villesee の導入に失敗: $($_.Exception.Message)（もう一度このコマンドを実行）" }
+
 # ---------- Claude Code ----------
 Step "Claude Code"
 if (Get-Command claude -ErrorAction SilentlyContinue) {

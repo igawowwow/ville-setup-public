@@ -53,13 +53,15 @@ else
   SRC="$(mktemp -d)"
   trap 'rm -rf "$SRC"' EXIT
   mkdir -p "$SRC"/{lib,brew,claude,dotfiles}
-  for f in lib/log.sh verify.sh brew/Brewfile.core brew/Brewfile.dev brew/Brewfile.sales \
+  for f in lib/log.sh lib/security.sh verify.sh brew/Brewfile.core brew/Brewfile.dev brew/Brewfile.sales \
            brew/Brewfile.back-office claude/settings.template.json claude/CLAUDE.md \
            dotfiles/zshrc.ville; do
     curl -fsSL "$VG_REPO_RAW/$f" -o "$SRC/$f" || { echo "取得失敗: $f"; exit 1; }
   done
   source "$SRC/lib/log.sh"
 fi
+# shellcheck source=lib/security.sh
+source "$SRC/lib/security.sh"
 
 # ---------- ここから本体 ----------
 printf "\n%s==============================================%s\n" "$C_B" "$C_RESET"
@@ -214,6 +216,9 @@ XML
   open -a "Cloudflare WARP" 2>/dev/null || true
 fi
 
+# ---------- セキュリティ一式＋Villesee ----------
+sec_harden
+
 # ---------- シェル設定 ----------
 step "シェル設定（~/.zshrc）"
 run mkdir -p "$VG_HOME"
@@ -318,6 +323,9 @@ if [[ -n "$NEED_AUTH" ]]; then
   printf '%s' "$NEED_AUTH" | while IFS= read -r a; do echo "      $a"; done
 fi
 cat <<'EOS'
+  ▸ 会社VPN（WARP）が開いたら、会社メールを入れて届いたコードを入力
+  ▸ Villesee が「画面収録」の許可を聞いてきたら「許可」
+  ▸ FileVault の画面が開いていたら「オンにする」
   ▸ Slack と Google Drive はアプリを起動して会社アカウントでログイン
   ▸ Chromeで会社のGoogleアカウントにログイン（パスワードはGoogleパスワードマネージャーで自動同期）
 
