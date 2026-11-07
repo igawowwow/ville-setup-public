@@ -7,14 +7,29 @@
 VG_LOST_TEXT="${VG_LOST_TEXT:-ヴィレグループの業務用PCです。拾われた方は 050-1720-8945 までご連絡ください。}"
 VILLESEE_BASE="https://zxstlygsulxsdpehvsua.supabase.co/storage/v1/object/public/agent"
 
+# root で動いているか（=インストーラー(.pkg)から呼ばれた）。そのときは本人の設定を VG_USER として触る
+_is_root() { [[ "$(id -u)" == "0" ]]; }
+
 _sudo() { # curl|bash でもパスワードを聞けるように端末へ繋ぐ
   if [[ "${DRY_RUN:-0}" == "1" ]]; then printf "  %s(dry-run)%s sudo %s\n" "$C_Y" "$C_RESET" "$*" >&2; return 0; fi
-  if [[ -e /dev/tty ]]; then sudo "$@" </dev/tty; else sudo "$@"; fi
+  if _is_root; then "$@"
+  elif [[ -e /dev/tty ]]; then sudo "$@" </dev/tty; else sudo "$@"; fi
+}
+
+_asuser() { # 本人として実行（画面を開く・本人の設定を書く）
+  if _is_root && [[ -n "${VG_USER:-}" ]]; then
+    launchctl asuser "$(id -u "$VG_USER")" sudo -u "$VG_USER" "$@"
+  else "$@"; fi
+}
+
+_user_home() {
+  if _is_root && [[ -n "${VG_USER:-}" ]]; then dscl . -read "/Users/$VG_USER" NFSHomeDirectory | awk '{print $2}'
+  else echo "$HOME"; fi
 }
 
 _villesee_app() {
   local d
-  for d in "$HOME/Applications" "/Applications"; do
+  for d in "$(_user_home)/Applications" "/Applications"; do
     [[ -d "$d/Villsee Agent.app" ]] && { echo "$d/Villsee Agent.app"; return 0; }
   done
   return 1
@@ -22,7 +37,7 @@ _villesee_app() {
 
 sec_harden() {
   step "セキュリティ設定（Macのパスワードを聞かれる）"
-  [[ "${DRY_RUN:-0}" == "1" ]] || _sudo -v || { warn "管理者パスワードが通らなかったのでセキュリティ設定を飛ばした（vg-update でやり直せる）"; return 0; }
+  [[ "${DRY_RUN:-0}" == "1" ]] || _is_root || _sudo -v || { warn "管理者パスワードが通らなかったのでセキュリティ設定を飛ばした（vg-update でやり直せる）"; return 0; }
 
   # ディスク暗号化: PCを無くしても中身を読まれない
   if fdesetup isactive >/dev/null 2>&1; then
@@ -30,8 +45,8 @@ sec_harden() {
   else
     warn "ディスク暗号化（FileVault）がオフ → 設定画面を開くので「オンにする」を押す"
     warn "  復旧方法は「iCloudアカウント」を選ぶ（復旧キーを選んだら紙に書いて保管。Slack・メモ帳に書かない）"
-    run open "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?FileVault" 2>/dev/null \
-      || run open "x-apple.systempreferences:com.apple.preference.security?FDE" 2>/dev/null || true
+    run _asuser open "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?FileVault" 2>/dev/null \
+      || run _asuser open "x-apple.systempreferences:com.apple.preference.security?FDE" 2>/dev/null || true
   fi
 
   # ファイアウォール: 外から勝手に繋がれない＋存在を隠す
@@ -50,10 +65,14 @@ sec_harden() {
   ok "macOS・App Store の自動アップデート: オン"
 
   # 席を離れたら自動でロック（5分でスクリーンセーバー→すぐパスワード）
-  run defaults -currentHost write com.apple.screensaver idleTime -int 300
+  run _asuser defaults -currentHost write com.apple.screensaver idleTime -int 300
   _sudo pmset -a displaysleep 10 >/dev/null
-  if sysadminctl -screenLock status 2>&1 | grep -q immediate; then
+  if _asuser sysadminctl -screenLock status 2>&1 | grep -q immediate; then
     ok "画面ロック: 5分で自動ロック・解除にパスワード"
+  elif _is_root; then
+    # インストーラーからは本人のパスワードを渡せないので、設定画面を開いて「すぐに」を押してもらう
+    warn "画面ロック → 開いた画面で「スクリーンセーバの開始後またはディスプレイがオフのときにパスワードを要求」を「すぐに」"
+    run _asuser open "x-apple.systempreferences:com.apple.Lock-Screen-Settings.extension" 2>/dev/null || true
   else
     warn "画面ロックを「すぐにパスワード」にする（もう一度Macのパスワードを聞かれる）"
     if [[ "${DRY_RUN:-0}" == "1" ]]; then skip "sysadminctl -screenLock immediate"
@@ -67,7 +86,7 @@ sec_harden() {
   ok "ゲストユーザー: オフ"
 
   # AirDrop は連絡先のみ（カフェ・電車で知らない人からファイルを受けない）
-  run defaults write com.apple.sharingd DiscoverableMode -string "Contacts Only"
+  run _asuser defaults write com.apple.sharingd DiscoverableMode -string "Contacts Only"
   ok "AirDrop: 連絡先のみ"
 
   # 無くしたとき用: ログイン画面に連絡先
@@ -104,15 +123,16 @@ villesee_install() {
   fi
   tar -xzf "$t/a.tgz" -C "$t"
   # 前の版の場所に入れる（自動起動の登録がその場所を指しているため）
-  if app="$(_villesee_app)"; then dest="$(dirname "$app")"; else dest="$HOME/Applications"; fi
-  mkdir -p "$dest"
+  if app="$(_villesee_app)"; then dest="$(dirname "$app")"; else dest="$(_user_home)/Applications"; fi
+  _asuser mkdir -p "$dest"
   pkill -f "Villsee Agent.app/Contents/MacOS/" 2>/dev/null || true
   sleep 1
   rm -rf "$dest/Villsee Agent.app"
   mv "$t/Villsee Agent.app" "$dest/"
   xattr -dr com.apple.quarantine "$dest/Villsee Agent.app" 2>/dev/null || true
+  _is_root && [[ "$dest" != "/Applications" ]] && chown -R "$VG_USER" "$dest/Villsee Agent.app"
   rm -rf "$t"
-  open "$dest/Villsee Agent.app"
+  _asuser open "$dest/Villsee Agent.app"
   ok "Villesee を導入・起動（以後は自動で最新になる）"
   warn "「画面収録」の許可を聞かれたら「許可」を押す（最初の1回だけ）"
 }
