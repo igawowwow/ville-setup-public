@@ -208,7 +208,7 @@ else
 <plist version="1.0">
 <dict>
   <key>organization</key><string>villegroup</string>
-  <key>auto_connect</key><integer>1</integer>
+  <key>auto_connect</key><integer>3</integer>
   <key>service_mode</key><string>warp</string>
 </dict>
 </plist>

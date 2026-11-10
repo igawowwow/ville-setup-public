@@ -62,7 +62,7 @@ try {
   $rk = "HKLM:\SOFTWARE\Cloudflare\Warp"
   New-Item -Path $rk -Force | Out-Null
   New-ItemProperty -Path $rk -Name "organization" -Value "villegroup" -PropertyType String -Force | Out-Null
-  New-ItemProperty -Path $rk -Name "auto_connect"  -Value 1          -PropertyType DWord  -Force | Out-Null
+  New-ItemProperty -Path $rk -Name "auto_connect"  -Value 3          -PropertyType DWord  -Force | Out-Null
   New-ItemProperty -Path $rk -Name "service_mode"  -Value "warp"      -PropertyType String -Force | Out-Null
   Ok "WARP設定を配置（起動→会社メールでログインするだけ）"
 } catch {
